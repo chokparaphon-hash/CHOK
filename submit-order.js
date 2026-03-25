@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd-x_spkoYWbxpxfPgLL5glbN4CHv6di-mMsBHCxFYZNQ2JgK_yPjsfB5fQht0_hq3wQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0J27HAObk3sUFo2xUDW13IzBaxZnofD_B7lJh2NSs-SEQTomm95YUKr6dJa7zCvc-/exec';
 
 async function submitOrder(payload) {
   try {
