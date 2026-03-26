@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MIW Shop</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    :root{
+      --bg:#0f1722;
+      --panel:#182231;
+      --card:#2a3444;
+      --card-2:#253042;
+      --green:#22c55e;
+      --green-2:#18a84f;
+      --text:#ffffff;
+      --muted:#d9e2ec;
+      --line:rgba(255,255,255,.08);
+      --warn:#fbbf24;
+      --danger:#f87171;
+    }
+    body{
+      margin:0;
+      font-family:"Tahoma","Noto Sans Thai",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .app{
+      width:100%;
+      max-width:480px;
+      margin:0 auto;
+      min-height:100vh;
+      background:var(--panel);
+    }
+    .header{
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:linear-gradient(135deg, var(--green) 0%, var(--green-2) 100%);
+      padding:14px 14px 16px;
+      box-shadow:0 8px 24px rgba(0,0,0,.18);
+    }
+    .shop-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .profile-avatar{
+      width:46px;
+      height:46px;
+      border-radius:50%;
+      object-fit:cover;
+      background:#fff;
+      border:2px solid rgba(255,255,255,.28);
+      flex-shrink:0;
+    }
+    .profile-meta{
+      min-width:0;
+    }
+    .shop-name{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.1;
+      margin:0 0 4px;
+    }
+    .shop-sub{
+      font-size:13px;
+      opacity:.96;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .content{ padding:12px; }
+
+    .address-card, .section-card{
+      background:var(--card-2);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 8px 20px rgba(0,0,0,.16);
+      margin-bottom:14px;
+      border:1px solid var(--line);
+    }
+    .address-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .section-title{
+      font-size:15px;
+      font-weight:800;
+      color:#fff;
+    }
+    .address-name{
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .address-text{
+      font-size:13px;
+      line-height:1.55;
+      color:var(--muted);
+      white-space:pre-line;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn-green{
+      background:var(--green);
+      color:#fff;
+    }
+    .btn-gray{
+      background:#3b4658;
+      color:#fff;
+    }
+    .btn-light{
+      background:#eef4ff;
+      color:#0f1722;
+    }
+
+    .category-bar{
+      display:flex;
+      gap:10px;
+      overflow-x:auto;
+      margin-bottom:14px;
+      padding-bottom:4px;
+      scrollbar-width:none;
+    }
+    .category-bar::-webkit-scrollbar{ display:none; }
+    .cat-btn{
+      border:none;
+      padding:11px 18px;
+      border-radius:999px;
+      background:#2a3444;
+      color:#d8e1ea;
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+      cursor:pointer;
+      border:1px solid var(--line);
+    }
+    .cat-btn.active{
+      background:var(--green);
+      color:#fff;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:12px;
+    }
+    .product-card{
+      background:var(--card);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:0 8px 20px rgba(0,0,0,.14);
+      text-align:center;
+      border:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      min-height:268px;
+    }
+    .product-card img{
+      width:92px;
+      height:92px;
+      object-fit:contain;
+      margin:0 auto 8px;
+      display:block;
+    }
+    .product-name{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.3;
+      min-height:38px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:4px;
+    }
+    .product-code{
+      font-size:12px;
+      color:#b8c7d9;
+      margin-bottom:6px;
+    }
+    .product-price{
+      color:var(--green);
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+    .product-stock{
+      font-size:13px;
+      color:#dbe5ef;
+      margin-bottom:10px;
+      min-height:20px;
+    }
+    .stock-low{ color:var(--warn); font-weight:700; }
+    .stock-out{ color:var(--danger); font-weight:700; }
+    .product-card .btn{
+      margin-top:auto;
+      width:100%;
+    }
+
+    .drawer-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.54);
+      opacity:0;
+      visibility:hidden;
+      transition:.18s ease;
+      z-index:40;
+    }
+    .drawer-backdrop.show{
+      opacity:1;
+      visibility:visible;
+    }
+    .drawer{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%) translateY(100%);
+      bottom:0;
+      width:100%;
+      max-width:480px;
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;
+      color:#1f2937;
+      border-radius:22px 22px 0 0;
+      z-index:41;
+      transition:.22s ease;
+      box-shadow:0 -10px 30px rgba(0,0,0,.26);
+    }
+    .drawer.show{
+      transform:translateX(-50%) translateY(0);
+    }
+    .drawer-inner{
+      padding:18px 16px 22px;
+    }
+    .drawer-handle{
+      width:56px;
+      height:6px;
+      border-radius:999px;
+      background:#d8dee9;
+      margin:2px auto 14px;
+    }
+    .drawer-head{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .drawer-image{
+      width:84px;
+      height:84px;
+      object-fit:contain;
+      border-radius:16px;
+      background:#f6f8fb;
+      border:1px solid #e5e7eb;
+      flex-shrink:0;
+    }
+    .drawer-title{
+      font-size:20px;
+      font-weight:800;
+      line-height:1.2;
+      margin:0 0 6px;
+      color:#111827;
+    }
+    .drawer-meta{
+      font-size:13px;
+      color:#667085;
+      line-height:1.5;
+    }
+    .drawer-stock{
+      margin-top:6px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+    .field label{
+      display:block;
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:6px;
+      color:#111827;
+    }
+    .req{ color:#dc2626; }
+    .text-input, .select-input, .textarea-input{
+      width:100%;
+      border:1px solid #d1d5db;
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    .text-input:focus, .select-input:focus, .textarea-input:focus{
+      border-color:#22c55e;
+      box-shadow:0 0 0 4px rgba(34,197,94,.12);
+    }
+    .textarea-input{
+      min-height:90px;
+      resize:vertical;
+    }
+    .hint{
+      font-size:12px;
+      color:#6b7280;
+      line-height:1.45;
+      margin-top:6px;
+    }
+
+    .qty-inline{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .qty-inline .select-input{
+      flex:1;
+    }
+
+    .radio-group{
+      display:grid;
+      gap:10px;
+    }
+    .option{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      padding:13px 14px;
+      background:#fff;
+      cursor:pointer;
+    }
+    .option input{
+      width:auto;
+      margin:0;
+      transform:scale(1.12);
+    }
+
+    .price-box{
+      background:linear-gradient(135deg, #fff7c8 0%, #fffdf2 100%);
+      border:1px solid #f1df73;
+      border-radius:18px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    .price-label{
+      font-size:13px;
+      color:#7a5a00;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .price-total{
+      font-size:30px;
+      line-height:1.08;
+      font-weight:900;
+      color:#111827;
+      margin:0;
+    }
+    .price-sub{
+      margin-top:8px;
+      font-size:12px;
+      color:#5f6368;
+      line-height:1.5;
+    }
+
+    .qr-box{
+      border:1px solid #f1df73;
+      border-radius:18px;
+      background:#fffdf4;
+      padding:14px;
+      display:none;
+      margin-bottom:12px;
+    }
+    .qr-box.show{ display:block; }
+    .qr-box h3{
+      margin:0 0 8px;
+      font-size:16px;
+      color:#111827;
+    }
+    .qr-box p{
+      margin:0 0 12px;
+      font-size:13px;
+      line-height:1.55;
+      color:#555;
+    }
+    .qr-image-wrap{
+      background:#fff;
+      border-radius:14px;
+      padding:10px;
+      border:1px solid #eee;
+      display:flex;
+      justify-content:center;
+    }
+    .qr-image-wrap img{
+      width:100%;
+      max-width:280px;
+      border-radius:10px;
+      display:block;
+    }
+
+    .upload-box{
+      border:2px dashed #d7dcdf;
+      border-radius:16px;
+      padding:14px;
+      background:#fafafa;
+      margin-bottom:12px;
+    }
+
+    .remember-box{
+      margin-top:2px;
+      padding:12px 14px;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      background:#fafafa;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:13px;
+      color:#111827;
+    }
+    .remember-box input{
+      width:auto;
+      margin:0;
+      padding:0;
+      box-shadow:none;
+    }
+
+    .summary{
+      margin-top:4px;
+      background:#f7fafc;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      padding:14px;
+      font-size:13px;
+      line-height:1.6;
+      color:#374151;
+    }
+
+    .drawer-actions{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+    }
+    .drawer-actions .btn{
+      flex:1;
+      min-height:46px;
+    }
+
+    .status{
+      margin:12px 0 0;
+      padding:14px 16px;
+      border-radius:14px;
+      font-size:14px;
+      display:none;
+      line-height:1.6;
+      white-space:pre-line;
+    }
+    .status.show{ display:block; }
+    .status.ok{
+      background:#eefaf0;
+      color:#176b2c;
+      border:1px solid #b7e2c0;
+    }
+    .status.error{
+      background:#fff1f1;
+      color:#a30000;
+      border:1px solid #efc1c1;
+    }
+
+    .footer-note{
+      margin-top:16px;
+      font-size:12px;
+      color:#667085;
+      text-align:center;
+      line-height:1.55;
+    }
+
+    .hidden{ display:none !important; }
+
+    @media (max-width:370px){
+      .grid{ gap:10px; }
+      .product-card{ min-height:252px; }
+      .product-card img{ width:82px; height:82px; }
+      .product-name{ font-size:14px; }
+      .price-total{ font-size:28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="shop-row">
+        <img id="profilePicture" class="profile-avatar" alt="profile" src="https://cdn-icons-png.flaticon.com/512/2202/2202112.png">
+        <div class="profile-meta">
+          <div class="shop-name">MIW Shop</div>
+          <div class="shop-sub"><strong id="displayName">ลูกค้า MIW</strong> • <span id="lineStatus">พร้อมกรอกข้อมูลสั่งซื้อ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="address-card">
+        <div class="address-head">
+          <div class="section-title">บันทึกที่อยู่จัดส่ง</div>
+          <button class="btn btn-green" type="button" id="editAddressBtn">แก้ไข</button>
+        </div>
+        <div class="address-name" id="savedName">ยังไม่ได้บันทึกชื่อ</div>
+        <div class="address-text" id="savedAddress">ยังไม่ได้บันทึกที่อยู่</div>
+      </div>
+
+      <div class="category-bar">
+        <button class="cat-btn active" data-category="all" type="button">ทั้งหมด</button>
+        <button class="cat-btn" data-category="capsule" type="button">ฝา</button>
+        <button class="cat-btn" data-category="sweet" type="button">หวาน</button>
+        <button class="cat-btn" data-category="gallon" type="button">แกลลอน</button>
+      </div>
+
+      <div class="grid" id="productGrid"></div>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <div class="drawer" id="orderDrawer">
+    <div class="drawer-inner">
+      <div class="drawer-handle"></div>
+
+      <form id="orderForm">
+        <input type="hidden" id="lineUserId" name="lineUserId">
+        <input type="hidden" id="lineDisplayName" name="lineDisplayName">
+        <input type="hidden" id="productCodeDisplay" />
+        <input type="hidden" id="productCode" name="productCode" />
+        <input type="hidden" id="basePrice" name="basePrice" />
+        <input type="hidden" id="discountAmount" name="discountAmount" value="5" />
+        <input type="hidden" id="finalPrice" name="finalPrice" />
+
+        <div class="drawer-head">
+          <img id="drawerImage" class="drawer-image" alt="product">
+          <div>
+            <h2 class="drawer-title" id="drawerTitle">สั่งซื้อสินค้า</h2>
+            <div class="drawer-meta">
+              รหัสสินค้า: <span id="drawerCode">-</span><br>
+              ราคาเริ่มต้น: <span id="drawerStartPrice">-</span>
+            </div>
+            <div class="drawer-stock" id="drawerStock">-</div>
+          </div>
+        </div>
+
+        <div class="field hidden">
+          <label for="productName">ชื่อสินค้า</label>
+          <select id="productName" name="productName">
+            <option value="">เลือกสินค้า</option>
+            <option value="ฝาแดง" data-code="DN">ฝาแดง</option>
+            <option value="ฝาเงิน" data-code="H">ฝาเงิน</option>
+            <option value="ฝาทอง" data-code="T">ฝาทอง</option>
+            <option value="ไอคลอ" data-code="I">ไอคลอ</option>
+            <option value="คลอริมีน" data-code="C">คลอริมีน</option>
+            <option value="น้ำตาลสด" data-code="MN">น้ำตาลสด</option>
+            <option value="โรมิโอ" data-code="MO">โรมิโอ</option>
+            <option value="ลิ้นจี่" data-code="ML">ลิ้นจี่</option>
+            <option value="คาราเมล" data-code="MC">คาราเมล</option>
+            <option value="ใบเตย" data-code="MP">ใบเตย</option>
+            <option value="น้ำตาลสดแกลลอน" data-code="MNG">น้ำตาลสดแกลลอน</option>
+            <option value="โรมิโอแกลลอน" data-code="MOG">โรมิโอแกลลอน</option>
+            <option value="ลิ้นจี่แกลลอน" data-code="MLG">ลิ้นจี่แกลลอน</option>
+            <option value="คาราเมลแกลลอน" data-code="MCG">คาราเมลแกลลอน</option>
+            <option value="ใบเตยแกลลอน" data-code="MPG">ใบเตยแกลลอน</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="quantity">จำนวนสินค้า <span class="req">*</span></label>
+          <div class="qty-inline">
+            <select id="quantity" name="quantity" class="select-input" required>
+              <option value="">เลือกจำนวน</option>
+            </select>
+          </div>
+          <div class="hint" id="quantityHint">เลือกสินค้าก่อน แล้วระบบจะแสดงจำนวนที่เลือกได้อัตโนมัติ</div>
+        </div>
+
+        <div class="field">
+          <label>กลุ่มลูกค้า <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="option"><input type="radio" name="customerGroup" value="กลุ่มร้านต้ม" required> กลุ่มร้านต้ม</label>
+            <label class="option"><input type="radio" name="customerGroup" value="กลุ่มกินเอง"> กลุ่มกินเอง</label>
+            <label class="option"><input type="radio" name="customerGroup" value="กลุ่มขายขวด"> กลุ่มขายขวด</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>วิธีชำระเงิน <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="option"><input type="radio" name="paymentMethod" value="โอน" required> โอนชำระ</label>
+            <label class="option"><input type="radio" name="paymentMethod" value="เก็บเงินปลายทาง"> เก็บเงินปลายทาง</label>
+          </div>
+          <div class="hint">ถ้าเลือกโอน ให้สแกน QR แล้วแนบสลิปด้านล่าง</div>
+        </div>
+
+        <div class="price-box">
+          <div class="price-label">ยอดที่ต้องจ่าย</div>
+          <p class="price-total" id="priceDisplay">-</p>
+          <div class="price-sub" id="priceSubtext">เลือกจำนวน และวิธีชำระเงิน ระบบจะคำนวณให้อัตโนมัติ</div>
+        </div>
+
+        <div class="field">
+          <label for="name">ชื่อ-นามสกุลผู้รับ <span class="req">*</span></label>
+          <input id="name" name="name" type="text" class="text-input" placeholder="เช่น สมชาย ใจดี" required />
+        </div>
+
+        <div class="field">
+          <label for="phone">เบอร์โทรศัพท์ <span class="req">*</span></label>
+          <input id="phone" name="phone" type="tel" class="text-input" inputmode="numeric" placeholder="เช่น 0812345678" required />
+        </div>
+
+        <div class="field">
+          <label for="address">ที่อยู่จัดส่ง <span class="req">*</span></label>
+          <textarea id="address" name="address" class="textarea-input" placeholder="บ้านเลขที่ / หมู่ / ถนน / ตำบล / อำเภอ / จังหวัด / รหัสไปรษณีย์" required></textarea>
+        </div>
+
+        <div class="qr-box" id="qrPaymentBox">
+          <h3>สแกนเพื่อโอนชำระ</h3>
+          <p>เมื่อเลือกชำระแบบโอน ลูกค้าสามารถสแกน QR นี้เพื่อชำระเงิน แล้วแนบสลิปด้านล่างได้ทันที</p>
+          <div class="qr-image-wrap">
+            <img id="qrPaymentImage" src="https://i.ibb.co/HTxzhprQ/QR-MIW.png" alt="QR Payment MIW Original" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="slipFile">แนบไฟล์สลิป</label>
+          <div class="upload-box">
+            <input id="slipFile" name="slipFile" type="file" accept="image/*" class="text-input" style="padding:10px" />
+            <div class="hint">แนบสลิปได้โดยตรง</div>
+          </div>
+        </div>
+
+        <label class="remember-box">
+          <input id="rememberCustomer" name="rememberCustomer" type="checkbox" checked />
+          บันทึกชื่อ ที่อยู่ และเบอร์โทร ไว้ใช้ครั้งถัดไปบนเครื่องนี้
+        </label>
+
+        <div class="summary">
+          <strong>เมื่อกดยืนยัน</strong><br>
+          ระบบจะส่งข้อมูลไปยังพนักงานแพ็คทันที พร้อมข้อมูลสินค้า จำนวน ราคา วิธีชำระเงิน และสลิปตามเดิม
+        </div>
+
+        <div id="statusBox" class="status"></div>
+
+        <div class="drawer-actions">
+          <button type="button" class="btn btn-gray" id="closeDrawerBtn">ปิด</button>
+          <button type="submit" class="btn btn-green" id="submitBtn">ยืนยันคำสั่งซื้อ</button>
+        </div>
+
+        <div class="footer-note">ตรวจสอบชื่อ ที่อยู่ จำนวน และวิธีชำระเงินก่อนกดส่งทุกครั้ง</div>
+      </form>
+    </div>
+  </div>
+
+  
+  <script>
+    const CONFIG = {
+      LIFF_ID: "",
+      APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx5t7XjwbwaDYevptKrEkKMab2Fb2KeiiKGvo_bjOg4xW6ZjiNa-yMjxhZyQRAdtkH3yA/exec",
+      CLOSE_LIFF_AFTER_SUCCESS: true,
+      USE_FILE_UPLOAD: true
+    };
+
+    const DN_COD_PRICE = { 5: 320, 10: 630, 25: 1350, 50: 2550, 100: 5000, 200: 9800 };
+    const H_COD_PRICE = { 5: 320, 10: 630, 25: 1375, 50: 2750, 100: 5300, 200: 10400 };
+    const T_COD_PRICE = { 5: 375, 10: 550, 25: 1250, 50: 2350, 100: 4500, 200: 9000 };
+    const I_COD_PRICE = { 5: 375, 10: 550, 25: 1250, 50: 2350, 100: 4500, 200: 9000 };
+    const C_COD_PRICE = { 5: 325, 10: 550, 25: 1175, 50: 2200, 100: 4100, 200: 7500 };
+    const DN_TRANSFER_PRICE = { 5: 300, 10: 600, 25: 1300, 50: 2500, 100: 4900, 200: 9390 };
+    const H_TRANSFER_PRICE = { 5: 300, 10: 600, 25: 1300, 50: 2650, 100: 5250, 200: 10300 };
+    const T_TRANSFER_PRICE = { 5: 250, 10: 500, 25: 1200, 50: 2250, 100: 4400, 200: 8600 };
+    const I_TRANSFER_PRICE = { 5: 250, 10: 500, 25: 1200, 50: 2250, 100: 4400, 200: 8600 };
+    const C_TRANSFER_PRICE = { 5: 275, 10: 500, 25: 1125, 50: 2100, 100: 4000, 200: 7400 };
+    const SWEET_PRICE_SAME = { 5: 225, 10: 450, 25: 1000, 50: 2000, 100: 3600, 200: 6400 };
+    const GALLON_PRICE_SAME = { 1: 490, 2: 980, 3: 1470, 4: 1960, 5: 2450, 6: 2700 };
+
+    const NORMAL_QUANTITIES = [5, 10, 25, 50, 100, 200];
+    const GALLON_QUANTITIES = [1, 2, 3, 4, 5, 6];
+    const GALLON_CODES = ["MNG", "MOG", "MLG", "MCG", "MPG"];
+    const DEFAULT_DISCOUNT = 5;
+    const DISCOUNT_STEP_QTY = 50;
+    const DISCOUNT_STEP_AMOUNT = 5;
+    const CUSTOMER_PROFILE_KEY = "miw_customer_profile_v1";
+
+    const PRODUCT_PRICING = {
+      DN: { "เก็บเงินปลายทาง": { ...DN_COD_PRICE }, "โอน": { ...DN_TRANSFER_PRICE } },
+      H:  { "เก็บเงินปลายทาง": { ...H_COD_PRICE },  "โอน": { ...H_TRANSFER_PRICE } },
+      T:  { "เก็บเงินปลายทาง": { ...T_COD_PRICE },  "โอน": { ...T_TRANSFER_PRICE } },
+      I:  { "เก็บเงินปลายทาง": { ...I_COD_PRICE },  "โอน": { ...I_TRANSFER_PRICE } },
+      C:  { "เก็บเงินปลายทาง": { ...C_COD_PRICE },  "โอน": { ...C_TRANSFER_PRICE } },
+      MN: { "เก็บเงินปลายทาง": { ...SWEET_PRICE_SAME }, "โอน": { ...SWEET_PRICE_SAME } },
+      MO: { "เก็บเงินปลายทาง": { ...SWEET_PRICE_SAME }, "โอน": { ...SWEET_PRICE_SAME } },
+      ML: { "เก็บเงินปลายทาง": { ...SWEET_PRICE_SAME }, "โอน": { ...SWEET_PRICE_SAME } },
+      MC: { "เก็บเงินปลายทาง": { ...SWEET_PRICE_SAME }, "โอน": { ...SWEET_PRICE_SAME } },
+      MP: { "เก็บเงินปลายทาง": { ...SWEET_PRICE_SAME }, "โอน": { ...SWEET_PRICE_SAME } },
+      MNG:{ "เก็บเงินปลายทาง": { ...GALLON_PRICE_SAME }, "โอน": { ...GALLON_PRICE_SAME } },
+      MOG:{ "เก็บเงินปลายทาง": { ...GALLON_PRICE_SAME }, "โอน": { ...GALLON_PRICE_SAME } },
+      MLG:{ "เก็บเงินปลายทาง": { ...GALLON_PRICE_SAME }, "โอน": { ...GALLON_PRICE_SAME } },
+      MCG:{ "เก็บเงินปลายทาง": { ...GALLON_PRICE_SAME }, "โอน": { ...GALLON_PRICE_SAME } },
+      MPG:{ "เก็บเงินปลายทาง": { ...GALLON_PRICE_SAME }, "โอน": { ...GALLON_PRICE_SAME } }
+    };
+
+    const PRODUCT_META = {
+      DN:  { name:"ฝาแดง", code:"DN", image:"https://cdn-icons-png.flaticon.com/512/3075/3075977.png", stock:20, category:"capsule" },
+      H:   { name:"ฝาเงิน", code:"H", image:"https://cdn-icons-png.flaticon.com/512/3075/3075977.png", stock:12, category:"capsule" },
+      T:   { name:"ฝาทอง", code:"T", image:"https://cdn-icons-png.flaticon.com/512/3075/3075977.png", stock:30, category:"capsule" },
+      I:   { name:"ไอคลอ", code:"I", image:"https://cdn-icons-png.flaticon.com/512/3075/3075977.png", stock:16, category:"capsule" },
+      C:   { name:"คลอริมีน", code:"C", image:"https://cdn-icons-png.flaticon.com/512/3075/3075977.png", stock:8, category:"capsule" },
+      MN:  { name:"น้ำตาลสด", code:"MN", image:"https://cdn-icons-png.flaticon.com/512/590/590836.png", stock:180, category:"sweet" },
+      MO:  { name:"โรมิโอ", code:"MO", image:"https://cdn-icons-png.flaticon.com/512/590/590836.png", stock:125, category:"sweet" },
+      ML:  { name:"ลิ้นจี่", code:"ML", image:"https://cdn-icons-png.flaticon.com/512/590/590836.png", stock:95, category:"sweet" },
+      MC:  { name:"คาราเมล", code:"MC", image:"https://cdn-icons-png.flaticon.com/512/590/590836.png", stock:84, category:"sweet" },
+      MP:  { name:"ใบเตย", code:"MP", image:"https://cdn-icons-png.flaticon.com/512/590/590836.png", stock:67, category:"sweet" },
+      MNG: { name:"น้ำตาลสดแกลลอน", code:"MNG", image:"https://cdn-icons-png.flaticon.com/512/3504/3504826.png", stock:10, category:"gallon" },
+      MOG: { name:"โรมิโอแกลลอน", code:"MOG", image:"https://cdn-icons-png.flaticon.com/512/3504/3504826.png", stock:8, category:"gallon" },
+      MLG: { name:"ลิ้นจี่แกลลอน", code:"MLG", image:"https://cdn-icons-png.flaticon.com/512/3504/3504826.png", stock:5, category:"gallon" },
+      MCG: { name:"คาราเมลแกลลอน", code:"MCG", image:"https://cdn-icons-png.flaticon.com/512/3504/3504826.png", stock:3, category:"gallon" },
+      MPG: { name:"ใบเตยแกลลอน", code:"MPG", image:"https://cdn-icons-png.flaticon.com/512/3504/3504826.png", stock:0, category:"gallon" }
+    };
+
+    const PRODUCT_ORDER = ["DN","H","T","I","C","MN","MO","ML","MC","MP","MNG","MOG","MLG","MCG","MPG"];
+
+    const form = document.getElementById("orderForm");
+    const statusBox = document.getElementById("statusBox");
+    const submitBtn = document.getElementById("submitBtn");
+    const displayNameEl = document.getElementById("displayName");
+    const lineStatusEl = document.getElementById("lineStatus");
+    const profilePictureEl = document.getElementById("profilePicture");
+
+    const productNameEl = document.getElementById("productName");
+    const productCodeEl = document.getElementById("productCode");
+    const productCodeDisplayEl = document.getElementById("productCodeDisplay");
+    const quantityEl = document.getElementById("quantity");
+    const quantityHintEl = document.getElementById("quantityHint");
+    const priceDisplayEl = document.getElementById("priceDisplay");
+    const basePriceEl = document.getElementById("basePrice");
+    const discountAmountEl = document.getElementById("discountAmount");
+    const finalPriceEl = document.getElementById("finalPrice");
+    const priceSubtextEl = document.getElementById("priceSubtext");
+    const rememberCustomerEl = document.getElementById("rememberCustomer");
+    const qrPaymentBoxEl = document.getElementById("qrPaymentBox");
+    const paymentMethodInputs = document.querySelectorAll('input[name="paymentMethod"]');
+    const customerGroupInputs = document.querySelectorAll('input[name="customerGroup"]');
+    const catButtons = document.querySelectorAll(".cat-btn");
+    const productGridEl = document.getElementById("productGrid");
+    const drawerEl = document.getElementById("orderDrawer");
+    const backdropEl = document.getElementById("drawerBackdrop");
+    const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+    const editAddressBtn = document.getElementById("editAddressBtn");
+    const savedNameEl = document.getElementById("savedName");
+    const savedAddressEl = document.getElementById("savedAddress");
+    const drawerImageEl = document.getElementById("drawerImage");
+    const drawerTitleEl = document.getElementById("drawerTitle");
+    const drawerCodeEl = document.getElementById("drawerCode");
+    const drawerStartPriceEl = document.getElementById("drawerStartPrice");
+    const drawerStockEl = document.getElementById("drawerStock");
+
+    let LIFF_READY = false;
+    let CURRENT_CATEGORY = "all";
+    let CURRENT_PRODUCT = null;
+    let USE_SHEET_PRODUCTS = false;
+    let USE_SHEET_PRICE = false;
+    let SHEET_PRODUCTS = [];
+
+    function showStatus(message, type = "ok") {
+      statusBox.className = `status show ${type}`;
+      statusBox.textContent = message;
+    }
+
+    function clearStatus() {
+      statusBox.className = "status";
+      statusBox.textContent = "";
+    }
+
+    function getRadioValue(name) {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      return checked ? checked.value : "";
+    }
+
+    function pad2(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function toThaiDateTimeString(date = new Date()) {
+      return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+    }
+
+    function formatBaht(amount) {
+      return new Intl.NumberFormat("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(Number(amount || 0));
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function loadSavedCustomerProfile() {
+      try {
+        const raw = localStorage.getItem(CUSTOMER_PROFILE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function saveCustomerProfile(profile) {
+      localStorage.setItem(CUSTOMER_PROFILE_KEY, JSON.stringify(profile));
+    }
+
+    function clearCustomerProfile() {
+      localStorage.removeItem(CUSTOMER_PROFILE_KEY);
+    }
+
+    function applySavedCustomerProfile() {
+      const profile = loadSavedCustomerProfile();
+      if (!profile) return;
+      if (profile.name) document.getElementById("name").value = profile.name;
+      if (profile.address) document.getElementById("address").value = profile.address;
+      if (profile.phone) document.getElementById("phone").value = profile.phone;
+      if (typeof profile.remember === "boolean") rememberCustomerEl.checked = profile.remember;
+      renderSavedAddressCard();
+    }
+
+    function renderSavedAddressCard() {
+      const profile = {
+        name: document.getElementById("name").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        phone: document.getElementById("phone").value.trim()
+      };
+
+      savedNameEl.textContent = profile.name || "ยังไม่ได้บันทึกชื่อ";
+      savedAddressEl.innerHTML = profile.address
+        ? `${profile.address}<br>โทร ${profile.phone || "-"}`
+        : "ยังไม่ได้บันทึกที่อยู่";
+    }
+
+    function editAddressQuick() {
+      const nameInput = document.getElementById("name");
+      const phoneInput = document.getElementById("phone");
+      const addressInput = document.getElementById("address");
+
+      const nextName = prompt("ชื่อผู้รับ", nameInput.value || "") ;
+      if (nextName === null) return;
+      const nextPhone = prompt("เบอร์โทร", phoneInput.value || "");
+      if (nextPhone === null) return;
+      const nextAddress = prompt("ที่อยู่จัดส่ง", addressInput.value || "");
+      if (nextAddress === null) return;
+
+      nameInput.value = nextName.trim();
+      phoneInput.value = nextPhone.trim();
+      addressInput.value = nextAddress.trim();
+
+      if (rememberCustomerEl.checked) {
+        saveCustomerProfile({
+          name: nameInput.value.trim(),
+          phone: phoneInput.value.trim(),
+          address: addressInput.value.trim(),
+          remember: true
+        });
+      }
+      renderSavedAddressCard();
+    }
+
+    function isLikelyValidLiffId(value) {
+      return /^\d{10,}[:-]/.test(String(value || "").trim());
+    }
+
+    function setLineProfile(profile) {
+      document.getElementById("lineUserId").value = profile.userId || "";
+      document.getElementById("lineDisplayName").value = profile.displayName || "";
+      displayNameEl.textContent = profile.displayName || "ลูกค้า LINE";
+      lineStatusEl.textContent = "เชื่อมต่อ LINE สำเร็จ";
+      if (profile.pictureUrl) {
+        profilePictureEl.src = profile.pictureUrl;
+      }
+    }
+
+    function setFallbackMode() {
+      LIFF_READY = false;
+      displayNameEl.textContent = "ลูกค้า MIW";
+      lineStatusEl.textContent = "พร้อมกรอกข้อมูลสั่งซื้อ";
+      document.getElementById("lineUserId").value = "";
+      document.getElementById("lineDisplayName").value = "";
+      profilePictureEl.src = "https://cdn-icons-png.flaticon.com/512/2202/2202112.png";
+    }
+
+    async function initLiff() {
+      if (!window.liff || !isLikelyValidLiffId(CONFIG.LIFF_ID)) {
+        setFallbackMode();
+        return;
+      }
+
+      try {
+        await liff.init({ liffId: CONFIG.LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          if (liff.isInClient()) {
+            liff.login();
+            return;
+          }
+          setFallbackMode();
+          return;
+        }
+        const profile = await liff.getProfile();
+        setLineProfile(profile);
+        LIFF_READY = true;
+      } catch (_) {
+        setFallbackMode();
+      }
+    }
+
+    function getSelectedPaymentMethod() {
+      return getRadioValue("paymentMethod");
+    }
+
+    function getSheetProductByCode(code) {
+      return SHEET_PRODUCTS.find(item => item.code === code) || null;
+    }
+
+    function getBasePrice(productCode, quantity, paymentMethod) {
+      const qty = String(quantity || "").trim();
+      if (!productCode || !qty || !paymentMethod) return null;
+      const productTable = PRODUCT_PRICING[productCode];
+      if (!productTable) return null;
+      const paymentTable = productTable[paymentMethod];
+      if (!paymentTable) return null;
+      const value = paymentTable[qty];
+      return typeof value === "number" ? value : null;
+    }
+
+    function calculateDiscount(quantity) {
+      const qty = Number(quantity || 0);
+      const code = productCodeEl.value;
+      if (!qty) return DEFAULT_DISCOUNT;
+      if (GALLON_CODES.includes(code)) return DEFAULT_DISCOUNT;
+      const steps = Math.max(1, Math.floor(qty / DISCOUNT_STEP_QTY));
+      return steps * DISCOUNT_STEP_AMOUNT;
+    }
+
+    function syncPaymentUi() {
+      const paymentMethod = getSelectedPaymentMethod();
+      qrPaymentBoxEl.classList.toggle("show", paymentMethod === "โอน");
+    }
+
+    function renderQuantityOptions(code) {
+      const currentValue = quantityEl.value;
+      const isGallon = GALLON_CODES.includes(code);
+      const quantities = isGallon ? GALLON_QUANTITIES : NORMAL_QUANTITIES;
+      quantityEl.innerHTML = '<option value="">เลือกจำนวน</option>' + quantities.map((qty) => `<option value="${qty}">${qty}</option>`).join("");
+      if (quantities.map(String).includes(currentValue)) {
+        quantityEl.value = currentValue;
+      } else {
+        quantityEl.value = "";
+      }
+      quantityHintEl.textContent = isGallon
+        ? "สินค้าแกลลอนเลือกได้เฉพาะ 1-6 เท่านั้น"
+        : "สินค้าทั่วไปเลือกได้เฉพาะ 5, 10, 25, 50, 100, 200";
+    }
+
+    async function syncPrice() {
+      const code = productCodeEl.value;
+      const qty = quantityEl.value;
+      const paymentMethod = getSelectedPaymentMethod();
+      const customerGroup = getRadioValue("customerGroup");
+
+      if (!code || !qty || !paymentMethod || !customerGroup) {
+        basePriceEl.value = "";
+        finalPriceEl.value = "";
+        discountAmountEl.value = String(DEFAULT_DISCOUNT);
+        priceDisplayEl.textContent = "-";
+        priceSubtextEl.textContent = "เลือกสินค้า จำนวน กลุ่มลูกค้า และวิธีชำระเงิน ระบบจะคำนวณให้อัตโนมัติ";
+        return;
+      }
+
+      if (USE_SHEET_PRICE && CONFIG.APPS_SCRIPT_URL) {
+        try {
+          const url =
+            `${CONFIG.APPS_SCRIPT_URL}?action=price` +
+            `&productCode=${encodeURIComponent(code)}` +
+            `&quantity=${encodeURIComponent(qty)}` +
+            `&paymentMethod=${encodeURIComponent(paymentMethod)}` +
+            `&customerGroup=${encodeURIComponent(customerGroup)}`;
+
+          const res = await fetch(url);
+          const data = await res.json();
+
+          if (data && data.ok) {
+            basePriceEl.value = String(data.basePrice ?? "");
+            finalPriceEl.value = String(data.finalPrice ?? "");
+            discountAmountEl.value = String(data.discountAmount ?? DEFAULT_DISCOUNT);
+            priceDisplayEl.textContent = `${formatBaht(data.finalPrice)} บาท`;
+            priceSubtextEl.textContent = `ราคาจากชีต ${formatBaht(data.basePrice)} บาท • ส่วนลด ${formatBaht(data.discountAmount)} บาท`;
+            return;
+          }
+
+          priceSubtextEl.textContent = (data && data.message) ? data.message : "ไม่พบราคาในชีต ใช้ราคาสำรองในไฟล์แทน";
+        } catch (err) {
+          priceSubtextEl.textContent = "ดึงราคาจากชีตไม่สำเร็จ ใช้ราคาสำรองในไฟล์แทน";
+        }
+      }
+
+      const basePrice = getBasePrice(code, qty, paymentMethod);
+      const discount = calculateDiscount(qty);
+
+      if (basePrice === null) {
+        basePriceEl.value = "";
+        finalPriceEl.value = "";
+        discountAmountEl.value = String(discount);
+        priceDisplayEl.textContent = "-";
+        priceSubtextEl.textContent = `ยังไม่ได้ตั้งราคา ${paymentMethod} สำหรับสินค้านี้หรือจำนวนนี้`;
+        return;
+      }
+
+      const finalPrice = Math.max(0, basePrice - discount);
+      basePriceEl.value = String(basePrice);
+      finalPriceEl.value = String(finalPrice);
+      discountAmountEl.value = String(discount);
+      priceDisplayEl.textContent = `${formatBaht(finalPrice)} บาท`;
+      priceSubtextEl.textContent = `ราคาสำรองในไฟล์ ${formatBaht(basePrice)} บาท • ส่วนลด ${formatBaht(discount)} บาท`;
+    }
+
+    function syncProductCode() {
+      const selectedOption = productNameEl.options[productNameEl.selectedIndex];
+      const code = selectedOption ? (selectedOption.dataset.code || "") : "";
+      productCodeEl.value = code;
+      productCodeDisplayEl.value = code;
+      renderQuantityOptions(code);
+      syncDrawerProductInfo(code);
+      syncPrice();
+    }
+
+    function getStartPrice(code) {
+      const sheetProduct = getSheetProductByCode(code);
+      if (sheetProduct && sheetProduct.startPrice !== null && sheetProduct.startPrice !== undefined && sheetProduct.startPrice !== "") {
+        return `${formatBaht(sheetProduct.startPrice)} บาท`;
+      }
+      const table = PRODUCT_PRICING[code] && PRODUCT_PRICING[code]["โอน"];
+      if (!table) return "-";
+      const values = Object.values(table);
+      return values.length ? `${formatBaht(values[0])} บาท` : "-";
+    }
+
+    function getStockText(stock) {
+      const qty = Number(stock || 0);
+      if (qty <= 0) return `<span class="stock-out">สินค้าหมด</span>`;
+      if (qty <= 5) return `<span class="stock-low">เหลือ ${qty} ชิ้น</span>`;
+      return `คงเหลือ ${qty} ชิ้น`;
+    }
+
+    function getMergedProductMeta(code) {
+      const localMeta = PRODUCT_META[code] || { code, name: code, image: "https://cdn-icons-png.flaticon.com/512/590/590836.png", stock: 0, category: "sweet" };
+      const sheetMeta = getSheetProductByCode(code);
+
+      if (!sheetMeta) return localMeta;
+
+      return {
+        ...localMeta,
+        name: sheetMeta.name || localMeta.name,
+        code: code,
+        stock: Number(sheetMeta.stock ?? localMeta.stock ?? 0),
+        category: sheetMeta.category || localMeta.category,
+        startPrice: sheetMeta.startPrice
+      };
+    }
+
+    function getRenderableProducts(category = "all") {
+      const baseCodes = USE_SHEET_PRODUCTS && SHEET_PRODUCTS.length
+        ? SHEET_PRODUCTS.map(item => item.code)
+        : PRODUCT_ORDER;
+
+      return baseCodes
+        .map(code => getMergedProductMeta(code))
+        .filter(Boolean)
+        .filter(item => category === "all" ? true : item.category === category);
+    }
+
+    function renderProducts(category = "all") {
+      const items = getRenderableProducts(category);
+
+      productGridEl.innerHTML = items.map(item => `
+        <div class="product-card">
+          <img src="${item.image}" alt="${item.name}">
+          <div class="product-name">${item.name}</div>
+          <div class="product-code">SKU: ${item.code}</div>
+          <div class="product-price">${getStartPrice(item.code)}</div>
+          <div class="product-stock">${getStockText(item.stock)}</div>
+          <button class="btn btn-green" type="button" onclick="openProductByCode('${item.code}')" ${Number(item.stock) <= 0 ? 'disabled style="opacity:.6;cursor:not-allowed"' : ''}>
+            ${Number(item.stock) <= 0 ? 'สินค้าหมด' : 'สั่งซื้อ'}
+          </button>
+        </div>
+      `).join("");
+    }
+
+    function syncDrawerProductInfo(code) {
+      const meta = getMergedProductMeta(code);
+      if (!meta) return;
+      CURRENT_PRODUCT = meta;
+      drawerImageEl.src = meta.image;
+      drawerTitleEl.textContent = meta.name;
+      drawerCodeEl.textContent = meta.code;
+      drawerStartPriceEl.textContent = getStartPrice(meta.code);
+      drawerStockEl.innerHTML = getStockText(meta.stock);
+    }
+
+    function selectProductInForm(code) {
+      const option = [...productNameEl.options].find(opt => opt.dataset.code === code);
+      if (!option) return false;
+      productNameEl.value = option.value;
+      syncProductCode();
+      return true;
+    }
+
+    function openProductByCode(code) {
+      const meta = getMergedProductMeta(code);
+      if (!meta || Number(meta.stock) <= 0) return;
+      selectProductInForm(code);
+      clearStatus();
+      openDrawer();
+    }
+
+    function openDrawer() {
+      drawerEl.classList.add("show");
+      backdropEl.classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDrawer() {
+      drawerEl.classList.remove("show");
+      backdropEl.classList.remove("show");
+      document.body.style.overflow = "";
+    }
+
+    function rebuildProductSelect() {
+      const items = getRenderableProducts("all");
+      const currentCode = productCodeEl.value || productCodeDisplayEl.value || "";
+
+      productNameEl.innerHTML = '<option value="">เลือกสินค้า</option>' + items.map(item =>
+        `<option value="${item.name}" data-code="${item.code}">${item.name}</option>`
+      ).join("");
+
+      if (currentCode) {
+        const option = [...productNameEl.options].find(opt => opt.dataset.code === currentCode);
+        if (option) {
+          productNameEl.value = option.value;
+        }
+      }
+    }
+
+    async function loadProductsFromSheet() {
+      if (!CONFIG.APPS_SCRIPT_URL) return;
+
+      try {
+        const res = await fetch(`${CONFIG.APPS_SCRIPT_URL}?action=products`);
+        const data = await res.json();
+
+        if (!data || !data.ok || !Array.isArray(data.products) || !data.products.length) {
+          USE_SHEET_PRODUCTS = false;
+          USE_SHEET_PRICE = false;
+          return;
+        }
+
+        SHEET_PRODUCTS = data.products.map(item => ({
+          code: String(item.productCode || item.code || "").trim().toUpperCase(),
+          name: String(item.productName || item.name || "").trim(),
+          startPrice: Number(item.startRetailTransferPrice ?? item.startWholesaleTransferPrice ?? item.startPrice ?? 0),
+          category: inferCategory(String(item.productCode || item.code || "").trim().toUpperCase()),
+          stock: Number(item.stock || PRODUCT_META[String(item.productCode || item.code || "").trim().toUpperCase()]?.stock || 0)
+        })).filter(item => item.code);
+
+        USE_SHEET_PRODUCTS = SHEET_PRODUCTS.length > 0;
+        USE_SHEET_PRICE = true;
+
+        rebuildProductSelect();
+        renderProducts(CURRENT_CATEGORY);
+      } catch (err) {
+        USE_SHEET_PRODUCTS = false;
+        USE_SHEET_PRICE = false;
+      }
+    }
+
+    function inferCategory(code) {
+      if (GALLON_CODES.includes(code)) return "gallon";
+      if (["DN","H","T","I","C"].includes(code)) return "capsule";
+      return "sweet";
+    }
+
+    async function postOrder(payload) {
+      const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(`Apps Script returned HTTP ${response.status}`);
+      }
+
+      if (!text || text.trim() === "") {
+        return { ok: true, message: "ส่งข้อมูลสำเร็จ" };
+      }
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (err) {
+        return { ok: true, message: "ส่งข้อมูลสำเร็จ" };
+      }
+
+      if (result.ok === false) {
+        throw new Error(result.message || "ส่งข้อมูลไม่สำเร็จ");
+      }
+
+      return result;
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault();
+      clearStatus();
+
+      if (!CONFIG.APPS_SCRIPT_URL) {
+        showStatus("ยังไม่ได้ตั้งค่า Apps Script URL", "error");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "กำลังส่งข้อมูล...";
+
+      try {
+        const slipFile = document.getElementById("slipFile").files[0];
+        let slipBase64 = "";
+        let slipFileName = "";
+
+        if (CONFIG.USE_FILE_UPLOAD && slipFile) {
+          slipBase64 = await fileToBase64(slipFile);
+          slipFileName = slipFile.name;
+        }
+
+        const customerProfile = {
+          name: document.getElementById("name").value.trim(),
+          address: document.getElementById("address").value.trim(),
+          phone: document.getElementById("phone").value.trim(),
+          remember: rememberCustomerEl.checked
+        };
+
+        if (rememberCustomerEl.checked) saveCustomerProfile(customerProfile);
+        else clearCustomerProfile();
+
+        const paymentMethod = getSelectedPaymentMethod();
+        if (!paymentMethod) {
+          throw new Error("กรุณาเลือกวิธีชำระเงิน");
+        }
+
+        if (paymentMethod === "โอน" && !slipFile) {
+          throw new Error("กรุณาแนบไฟล์สลิปก่อนยืนยันคำสั่งซื้อ");
+        }
+
+        if (!productCodeEl.value) {
+          throw new Error("กรุณาเลือกสินค้า");
+        }
+
+        if (!quantityEl.value) {
+          throw new Error("กรุณาเลือกจำนวนสินค้า");
+        }
+
+        const selectedMeta = getMergedProductMeta(productCodeEl.value);
+        if (selectedMeta && Number(selectedMeta.stock) > 0 && Number(quantityEl.value) > Number(selectedMeta.stock)) {
+          throw new Error("จำนวนสินค้ามากกว่าสต๊อกคงเหลือ");
+        }
+
+        if (!finalPriceEl.value) {
+          throw new Error("ยังไม่สามารถคำนวณราคาได้");
+        }
+
+        const payload = {
+          date: toThaiDateTimeString(),
+          product_name: productNameEl.value,
+          product_code: productCodeEl.value,
+          quantity: quantityEl.value,
+          name: customerProfile.name,
+          address: customerProfile.address,
+          phone: customerProfile.phone,
+          customer_group: getRadioValue("customerGroup"),
+          payment_method: paymentMethod,
+          slip_file_name: slipFileName,
+          slip_base64: slipBase64,
+          base_price: basePriceEl.value,
+          discount_amount: discountAmountEl.value,
+          final_price: finalPriceEl.value,
+          line_user_id: document.getElementById("lineUserId").value,
+          line_display_name: document.getElementById("lineDisplayName").value,
+          liff_ready: LIFF_READY
+        };
+
+        const result = await postOrder(payload);
+
+        if (result.ok === false) {
+          throw new Error(result.message || "ส่งข้อมูลไม่สำเร็จ");
+        }
+
+        showStatus("ส่งคำสั่งซื้อเรียบร้อยแล้ว ระบบส่งต่อไปยังพนักงานแพ็คทันที", "ok");
+
+        if (rememberCustomerEl.checked) {
+          saveCustomerProfile(customerProfile);
+        }
+
+        if (window.liff && LIFF_READY && liff.isInClient()) {
+          await liff.sendMessages([
+            {
+              type: "text",
+              text: `รับออเดอร์เรียบร้อย ✅\nสินค้า: ${payload.product_code}\nจำนวน: ${payload.quantity}\nชื่อ: ${payload.name}\nชำระเงิน: ${payload.payment_method}`
+            }
+          ]).catch(() => {});
+        }
+
+        document.getElementById("slipFile").value = "";
+        quantityEl.value = "";
+        customerGroupInputs.forEach(i => i.checked = false);
+        paymentMethodInputs.forEach(i => i.checked = false);
+        basePriceEl.value = "";
+        discountAmountEl.value = String(DEFAULT_DISCOUNT);
+        finalPriceEl.value = "";
+        priceDisplayEl.textContent = "-";
+        priceSubtextEl.textContent = "เลือกสินค้า จำนวน กลุ่มลูกค้า และวิธีชำระเงิน ระบบจะคำนวณให้อัตโนมัติ";
+        syncPaymentUi();
+        renderSavedAddressCard();
+
+        if (CONFIG.CLOSE_LIFF_AFTER_SUCCESS && window.liff && LIFF_READY && liff.isInClient()) {
+          setTimeout(() => liff.closeWindow(), 1400);
+        } else {
+          setTimeout(() => closeDrawer(), 900);
+        }
+      } catch (error) {
+        showStatus(error.message || "เกิดข้อผิดพลาดระหว่างส่งข้อมูล", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "ยืนยันคำสั่งซื้อ";
+      }
+    }
+
+    catButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        catButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        CURRENT_CATEGORY = btn.dataset.category;
+        renderProducts(CURRENT_CATEGORY);
+      });
+    });
+
+    productNameEl.addEventListener("change", syncProductCode);
+    quantityEl.addEventListener("change", syncPrice);
+    paymentMethodInputs.forEach((input) => input.addEventListener("change", () => {
+      syncPaymentUi();
+      syncPrice();
+    }));
+    customerGroupInputs.forEach((input) => input.addEventListener("change", syncPrice));
+
+    document.getElementById("name").addEventListener("input", renderSavedAddressCard);
+    document.getElementById("phone").addEventListener("input", renderSavedAddressCard);
+    document.getElementById("address").addEventListener("input", renderSavedAddressCard);
+
+    form.addEventListener("submit", handleSubmit);
+    backdropEl.addEventListener("click", closeDrawer);
+    closeDrawerBtn.addEventListener("click", closeDrawer);
+    editAddressBtn.addEventListener("click", editAddressQuick);
+
+    window.openProductByCode = openProductByCode;
+
+    applySavedCustomerProfile();
+    renderSavedAddressCard();
+    rebuildProductSelect();
+    renderProducts(CURRENT_CATEGORY);
+    syncProductCode();
+    syncPaymentUi();
+    syncPrice();
+    initLiff();
+    loadProductsFromSheet();
+  </script>
+</body>
+</html>
