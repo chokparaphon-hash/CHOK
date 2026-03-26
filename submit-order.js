@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0J27HAObk3sUFo2xUDW13IzBaxZnofD_B7lJh2NSs-SEQTomm95YUKr6dJa7zCvc-/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0J27HAObk3sUFo2xUDW13IzBaxZnofD_B7lJh2NSs-SEQTomm95YUKr6dJa7zCvc-/exec';https://github.com/chokparaphon-hash/CHOK/blob/main/submit-order.js
 
 async function submitOrder(payload) {
   try {
