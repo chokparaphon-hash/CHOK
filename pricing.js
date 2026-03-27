@@ -1,6 +1,6 @@
 window.CONFIG = {
   LIFF_ID: "2009610281-wwEmfodW",
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx5t7XjwbwaDYevptKrEkKMab2Fb2KeiiKGvo_bjOg4xW6ZjiNa-yMjxhZyQRAdtkH3yA/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzw0GdpbSqoBhYbPWyts_gae-YQ4Z-8NN_aPIRrFuBB9Qp-IELpZ-CqtquWk-vSCZPVtA/exec",
   CLOSE_LIFF_AFTER_SUCCESS: true,
   USE_FILE_UPLOAD: true
 };
